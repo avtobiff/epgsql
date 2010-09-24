@@ -15,6 +15,10 @@ RELEASE		:= $(NAME)-$(VERSION).tar.gz
 APPDIR		:= $(NAME)-$(VERSION)
 BEAMS		:= $(SRC:src/%.erl=ebin/%.beam) 
 
+PREFIX		?= /usr
+ERL_ROOT	:= $(PREFIX)/lib/erlang
+LIBDIR		:= /lib
+
 compile: $(BEAMS)
 
 app: compile
@@ -29,6 +33,13 @@ clean:
 	@rm -f ebin/*.beam
 	@rm -rf $(NAME)-$(VERSION) $(NAME)-*.tar.gz
 
+install: app
+	@mkdir -p $(DESTDIR)$(ERL_ROOT)$(LIBDIR)
+	@cp -r $(APPDIR) $(DESTDIR)$(ERL_ROOT)$(LIBDIR)
+
+uninstall:
+	@rm -rf $(DESTDIR)$(ERL_ROOT)$(LIBDIR)/$(APPDIR)
+
 test: $(TESTS:test_src/%.erl=test_ebin/%.beam) $(BEAMS)
 	@dialyzer --src -c src
 	$(ERL) -pa ebin/ -pa test_ebin/ -noshell -s pgsql_tests run_tests -s init stop
@@ -36,7 +47,7 @@ test: $(TESTS:test_src/%.erl=test_ebin/%.beam) $(BEAMS)
 # ------------------------------------------------------------------------
 
 .SUFFIXES: .erl .beam
-.PHONY:    app compile clean test
+.PHONY:    app compile clean install uninstall test
 
 ebin/%.beam : src/%.erl
 	$(ERLC) $(ERLC_FLAGS) -o $(dir $@) $<
