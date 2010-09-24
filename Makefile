@@ -13,13 +13,14 @@ TESTS 		:= $(wildcard test_src/*.erl)
 RELEASE		:= $(NAME)-$(VERSION).tar.gz
 
 APPDIR		:= $(NAME)-$(VERSION)
+APPFILE	:= $(NAME).app
 BEAMS		:= $(SRC:src/%.erl=ebin/%.beam) 
 
 PREFIX		?= /usr
 ERL_ROOT	:= $(PREFIX)/lib/erlang
 LIBDIR		:= /lib
 
-compile: $(BEAMS)
+compile: $(BEAMS) ebin/$(APPFILE)
 
 app: compile
 	@mkdir -p $(APPDIR)/ebin
@@ -31,6 +32,7 @@ release: app
 
 clean:
 	@rm -f ebin/*.beam
+	@rm -f ebin/*.app
 	@rm -rf $(NAME)-$(VERSION) $(NAME)-*.tar.gz
 
 install: app
@@ -54,3 +56,6 @@ ebin/%.beam : src/%.erl
 
 test_ebin/%.beam : test_src/%.erl
 	$(ERLC) $(ERLC_FLAGS) -o $(dir $@) $<
+
+ebin/%.app : src/%.app
+	cp $< $@
